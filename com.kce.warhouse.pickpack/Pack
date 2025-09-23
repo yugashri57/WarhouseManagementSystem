@@ -1,0 +1,32 @@
+package com.kce.warhouse.pickpack;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Pack {
+	    private String packId;
+	    private PickList pickList;
+	    private List<PickTask> packedItems = new ArrayList<>();
+
+	    public Pack(String packId,PickList pickList) {
+	        this.packId = packId;
+	        this.pickList = pickList;     
+	    }
+	    
+	    public void addPickedItem(PickTask task) { 
+	    	     packedItems.add(task); 
+	    	}
+	    
+	    public List<PickTask> getPackedItems() { 
+	    	      return packedItems; 
+	    	}
+	    public PickList getPickList() { 
+	    	     return pickList; 
+	    	}
+	    
+	    @Override
+	    public String toString() {
+	        return "Pack:(ID="+packId+",Items="+packedItems.size()+")";
+	    }
+		
+}

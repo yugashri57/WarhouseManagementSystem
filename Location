@@ -1,0 +1,26 @@
+package com.kce.warhouse.model;
+
+public class Location{
+	private String locationId;
+    private String description;
+
+    public Location(String locationId, String description) {
+        this.locationId = locationId;
+        this.description = description;
+    }
+    
+
+    public String getLocationId() {
+    	return locationId;
+    }
+    
+    public String getDescription() { 
+    	return description;
+    }
+
+    @Override
+    public String toString() {
+        return "Location:(ID="+locationId+",Description="+description+")";
+    }
+
+}

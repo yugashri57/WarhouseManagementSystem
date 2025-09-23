@@ -1,0 +1,12 @@
+package com.kce.warhouse.user;
+
+public class Packer extends Worker{
+
+	public Packer(String workerId, String name) {
+		super(workerId, name);
+	}
+	  @Override
+	    public void performTask() {
+	        System.out.println("Packer"+getName()+"is packing items");
+	    }
+}

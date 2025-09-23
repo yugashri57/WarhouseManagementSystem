@@ -1,0 +1,12 @@
+package com.kce.warhouse.user;
+
+public class Picker extends Worker {
+
+	public Picker(String workerId, String name) {
+		super(workerId, name);
+	}
+	 @Override
+	    public void performTask() {
+	        System.out.println("Picker" + getName()+"is picking items");
+	    }
+}

@@ -1,0 +1,40 @@
+package com.kce.warhouse.pickpack;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class PickList {
+	public enum Status { 
+		   PENDING, PICKED, PACKED
+		}
+	    private String pickListId;
+	    private List<PickTask> tasks;
+	    private Status status;
+	    
+	    public PickList(String pickListId) {
+	        this.pickListId = pickListId;
+	        this.tasks = new ArrayList<>();
+	    }
+	    public void addTask(PickTask task) { 
+	    	     tasks.add(task); 
+	    	}
+	    public List<PickTask> getTasks() { 
+	    	    return tasks; 
+	    	}
+	    public String getPickListId() { 
+	    	    return pickListId;
+	    	}
+	    public void setStatus(Status status) { 
+   	     this.status = status;
+   	}
+	    public Status getStatus() { 
+	    	    return status;
+	    	}
+	    
+	    @Override
+	    public String toString() {
+	        return "PickList:(ID =" +pickListId +", Tasks= "+tasks.size() + ",Status="+ status +")";
+	    }
+	 }
+
+

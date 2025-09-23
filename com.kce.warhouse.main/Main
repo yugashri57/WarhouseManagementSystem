@@ -1,0 +1,296 @@
+package com.kce.warhouse.main;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import com.kce.warhouse.model.InventoryRecord;
+import com.kce.warhouse.model.Item;
+import com.kce.warhouse.model.Location;
+import com.kce.warhouse.pickpack.Pack;
+import com.kce.warhouse.pickpack.PickList;
+import com.kce.warhouse.pickpack.PickTask;
+import com.kce.warhouse.ship.Shipment;
+
+public class Main {
+    private static Scanner sc = new Scanner(System.in);
+    private static Map<String, Item> items = new HashMap<>();
+    private static Map<String, Location> locations = new HashMap<>();
+    private static List<InventoryRecord> inventoryRecords = new ArrayList<>();
+    private static List<PickList> pickLists = new ArrayList<>();
+    private static List<Pack> packs = new ArrayList<>();
+    private static List<Shipment> shipments = new ArrayList<>();
+
+    public static void  main(String[] args) {
+        int choice;
+        do {
+            System.out.println("--Warehouse Management System--");
+            System.out.println("1.Add Item");
+            System.out.println("2.Add Location");
+            System.out.println("3.Adjust Inventory");
+            System.out.println("4.Create Pick List");
+            System.out.println("5.Record Pick");
+            System.out.println("6.Create Pack");
+            System.out.println("7.Ship Order");
+            System.out.println("8.Inventory Summary");
+            System.out.println("9.Exit");
+            System.out.println("10.Transfer Stock");
+            System.out.println("Enter choice:");
+            choice = sc.nextInt();
+            sc.nextLine();
+
+            switch (choice) {
+                case 1 -> addItem();
+                case 2 -> addLocation();
+                case 3 -> adjustInventory();
+                case 4 -> createPickList();
+                case 5 -> recordPick();
+                case 6 -> createPack();
+                case 7 -> shipOrder();
+                case 8 -> inventorySummary();
+                case 9 -> System.out.println("Exiting system");
+                case 10-> transferStock();
+                default -> System.out.println("Invalid,try again...");
+            }
+        } while (choice != 9);
+    }
+    private static void addItem() {
+        System.out.print("Enter Item ID: ");
+        String id = sc.nextLine().trim();
+        System.out.print("Enter Item Name: ");
+        String name = sc.nextLine();
+        System.out.print("Enter Item Description: ");
+        String desc = sc.nextLine();
+
+        Item item = new Item(id, name, desc);
+        items.put(id, item);
+        System.out.println("Item added to the WMS:" + item);
+    }
+
+    private static void addLocation() {
+        System.out.print("Enter Location ID:");
+        String id = sc.nextLine();
+        System.out.print("Enter Location Description:");
+        String desc = sc.nextLine();
+        
+        Location loc = new Location(id, desc);
+        locations.put(id, loc);
+        System.out.println("Location added to the WMS: " + loc);
+    }
+
+    private static void adjustInventory() {
+        System.out.print("Enter Item ID: ");
+        String itemId = sc.nextLine();
+        Item item = items.get(itemId);
+
+        System.out.print("Enter Location ID: ");
+        String locId = sc.nextLine();
+        Location loc = locations.get(locId);
+
+        if (item == null || loc == null) {
+            System.out.println("Invalid item or location");
+            return;
+        }
+
+        System.out.print("Enter quantity:");
+        int qty = sc.nextInt();
+        sc.nextLine();
+
+        InventoryRecord record = findRecord(item, loc);
+        if (record == null) {
+            record = new InventoryRecord(item, loc, 0);
+            inventoryRecords.add(record);
+        }
+
+        if (qty >= 0) { 
+        	record.increaseQuantity(qty);
+        }
+        else {
+        	record.decreaseQuantity(-qty);
+        }
+        System.out.println("Inventory has been updated:" + record);
+    }
+
+    private static void createPickList() {
+        System.out.print("Enter PickList ID:");
+        String id = sc.nextLine();
+        PickList pickList = new PickList(id);
+
+        System.out.print("How many tasks to add?");
+        int n = sc.nextInt();
+        sc.nextLine();
+
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter Item ID: ");
+            String itemId = sc.nextLine();
+            Item item = items.get(itemId);
+
+            System.out.print("Enter Location ID: ");
+            String locId = sc.nextLine();
+            Location loc = locations.get(locId);
+
+            System.out.print("Enter Quantity: ");
+            int qty = sc.nextInt();
+            sc.nextLine();
+
+            if (item != null && loc != null) {
+                InventoryRecord record = findRecord(item, loc);
+                if (record != null && record.getQuantity() >= qty) {
+                    PickTask task = new PickTask(item, loc, qty);
+                    pickList.addTask(task);
+                } 
+                else {
+                    System.out.println("Not enough stock for Item" + itemId);
+                }
+            } 
+            else {
+                System.out.println("Invalid item or location");
+            }
+        }
+        pickLists.add(pickList);
+        System.out.println("Pick List created:" + pickList);
+    }
+
+    private static void recordPick() {
+        if (pickLists.isEmpty()) {
+            System.out.println("No pick lists available");
+            return;
+        }
+
+        PickList pickList = pickLists.get(pickLists.size() - 1);
+        int totalRequested = 0, totalPicked = 0;
+        for (PickTask task : pickList.getTasks()) {
+        	totalRequested += task.getQuantity();
+            InventoryRecord record = findRecord(task.getItem(), task.getLocation());
+            if (record != null) { 
+            	record.decreaseQuantity(task.getQuantity());
+            	totalPicked += task.getQuantity(); 
+            	
+            }
+        }
+        pickList.setStatus(PickList.Status.PICKED);
+        System.out.println("Pick recorded for PickList:" + pickList.getPickListId());
+        System.out.println("Pick Summary:Requested="+totalRequested+",Picked="+totalPicked);
+    }
+
+    private static void createPack() {
+        if (pickLists.isEmpty()) {
+            System.out.println("No pick lists to pack!");
+            return;
+        }
+        PickList pickList = pickLists.get(pickLists.size() - 1);
+        if (pickList.getStatus() != PickList.Status.PICKED) {
+            System.out.println("Pick list not yet picked!");
+            return;
+        }
+
+        System.out.print("Enter Pack ID: ");
+        String packId = sc.nextLine();
+
+        Pack pack = new Pack(packId,pickList);
+        for (PickTask task : pickList.getTasks()) pack.addPickedItem(task);
+
+        pickList.setStatus(PickList.Status.PACKED);
+        packs.add(pack);
+        System.out.println("Pack created:"+pack);
+    }
+
+
+    private static void shipOrder() {
+        if (packs.isEmpty()) {
+            System.out.println("No packs available for shipping");
+            return;
+        }
+
+        System.out.print("Enter Shipment ID: ");
+        String shipId = sc.nextLine();
+        System.out.print("Enter Carrier Name: ");
+        String carrier = sc.nextLine();
+
+        Shipment shipment = new Shipment(shipId, carrier);
+        for (Pack pack : packs) {
+        	if (pack.getPickList().getStatus() != PickList.Status.PACKED) {
+                System.out.println("Cannot ship un-packed pick list:" + pack.getPickList().getPickListId());
+                continue;
+            }
+            shipment.addPack(pack);
+        }
+
+        shipments.add(shipment);
+        System.out.println("Shipment created: " + shipment);
+
+        System.out.println("Shipment Manifest:");
+        for (Pack pack : shipment.getPacks()) {
+            System.out.println("Pack ID: " + pack.getPickList().getPickListId());
+            for (PickTask task : pack.getPackedItems())
+                System.out.println(task);
+        }
+    }
+
+    private static void inventorySummary() {
+        System.out.println("Inventory Snapshot");
+        for (InventoryRecord r : inventoryRecords) {
+        	System.out.println(r);
+        }
+    }
+    private static void transferStock() { 
+        System.out.print("Enter Item ID: ");
+        String itemId = sc.nextLine();
+        Item item = items.get(itemId);
+
+        if (item == null) {
+            System.out.println("Invalid item ID");
+            return;
+        }
+
+        System.out.print("Enter Source Location ID:");
+        String sourceId = sc.nextLine();
+        Location source = locations.get(sourceId);
+
+        System.out.print("Enter Destination Location ID:");
+        String destId = sc.nextLine();
+        Location dest = locations.get(destId);
+
+        if (source == null || dest == null) {
+            System.out.println("Invalid locations");
+            return;
+        }
+
+        System.out.print("Enter Quantity to transfer:");
+        int qty = sc.nextInt();
+        sc.nextLine();
+
+        if (qty <= 0) {
+            System.out.println("Quantity must be positive");
+            return;
+        }
+
+        InventoryRecord sourceRec = findRecord(item, source);
+        InventoryRecord destRec = findRecord(item, dest);
+
+        if (sourceRec == null || sourceRec.getQuantity() < qty) {
+            System.out.println("Not enough stock at source location!");
+            return;
+        }
+
+        sourceRec.decreaseQuantity(qty);
+        if (destRec == null) {
+            destRec = new InventoryRecord(item, dest, 0);
+            inventoryRecords.add(destRec);
+        }
+        destRec.increaseQuantity(qty);
+
+        System.out.println("Transferred"+ qty +"of"+item.getName()+"from"+source.getLocationId()+"to"+dest.getLocationId());
+                           
+    }
+
+    private static InventoryRecord findRecord(Item item, Location loc) {
+        for (InventoryRecord r : inventoryRecords) {
+            if (r.getItem().equals(item) && r.getLocation().equals(loc)) 
+            	{
+            	    return r;
+            	}
+        }
+        return null;
+    }
+}

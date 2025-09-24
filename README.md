@@ -15,6 +15,7 @@ Compile and run the project:
 This will start the console-based **Warehouse Management System**. 
 
 Output:
+
 ![WhatsApp Image 2025-09-23 at 16 07 12_a0bf9a29](https://github.com/user-attachments/assets/d29ef97b-0f0a-418b-b49f-0c64e3bf056c)
 ![WhatsApp Image 2025-09-23 at 16 07 38_29160433](https://github.com/user-attachments/assets/98d67e5e-900b-4c3d-a207-e497823b132e)
 ![WhatsApp Image 2025-09-23 at 16 08 00_2aba90be](https://github.com/user-attachments/assets/9de6db17-917e-4bc2-8ac7-4877abf38587)
@@ -23,6 +24,13 @@ Output:
 ![WhatsApp Image 2025-09-23 at 16 09 57_a7093044](https://github.com/user-attachments/assets/02d711d0-fbb8-450b-8761-a4c87d8b8178)
 
 UML DIAGRAM:
+
+![umldiagram1](https://github.com/user-attachments/assets/b30be2e8-4e80-42f5-b750-307fb659a432)
+
+Student Details:
+YUGASHRI S
+717823Y163
+
 
 
 
